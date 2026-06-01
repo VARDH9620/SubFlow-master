@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Trash2, Edit, Shield, Search, UserCheck, UserX } from 'lucide-react';
 import * as db from '../../db/database';
-import { Card, Button, PageHeader, SearchBar, Badge, Modal, Input, ConfirmDialog, EmptyState } from '../../components/ui';
+import { Card, Button, PageHeader, SearchBar, Badge, Modal, Input, ConfirmDialog, EmptyState, AnimatedContainer, AnimatedItem, SkeletonTable } from '../../components/ui';
 import type { User, UserRole } from '../../types';
 
 export default function AdminUsers() {
@@ -12,8 +12,13 @@ export default function AdminUsers() {
   const [showDelete, setShowDelete] = useState(false);
   const [selected, setSelected] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({ first_name: '', last_name: '', email: '', phone: '', role: 'user' as UserRole });
+  const [loading, setLoading] = useState(true);
 
-  const refresh = async () => setUsers(await db.getAllUsers());
+  const refresh = async () => {
+    setLoading(true);
+    setUsers(await db.getAllUsers());
+    setTimeout(() => setLoading(false), 200);
+  };
 
   useEffect(() => { refresh(); }, []);
 
@@ -61,68 +66,82 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState icon={<Search className="w-10 h-10" />} title="No users found" description="No users match your search criteria" />
+      {loading ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <SkeletonTable columns={7} rows={6} />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : filtered.length === 0 ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <EmptyState icon={<Search className="w-10 h-10" />} title="No users found" description="No users match your search criteria" />
+          </AnimatedItem>
+        </AnimatedContainer>
       ) : (
-        <Card padding={false}>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">User</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Email</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Phone</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Role</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Status</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Joined</th>
-                  <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map(user => (
-                  <tr key={user.id} className="border-b border-gray-50 hover:bg-muted/50/50">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-primary-100 text-primary/90'}`}>
-                          {user.first_name[0]}{user.last_name[0]}
-                        </div>
-                        <span className="text-sm font-medium text-foreground">{user.first_name} {user.last_name}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-muted-foreground">{user.email}</td>
-                    <td className="py-3 px-4 text-sm text-muted-foreground">{user.phone || '—'}</td>
-                    <td className="py-3 px-4">
-                      <Badge variant={user.role === 'admin' ? 'purple' : 'default'}>
-                        {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td className="py-3 px-4">
-                      {user.is_verified ? (
-                        <Badge variant="success"><UserCheck className="w-3 h-3 mr-1" /> Verified</Badge>
-                      ) : (
-                        <Badge variant="warning"><UserX className="w-3 h-3 mr-1" /> Unverified</Badge>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-muted-foreground">{new Date(user.created_at).toLocaleDateString()}</td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex gap-1 justify-end">
-                        <button onClick={() => handleEdit(user)} className="p-1.5 hover:bg-muted rounded-lg" title="Edit">
-                          <Edit className="w-4 h-4 text-muted-foreground" />
-                        </button>
-                        {user.role !== 'admin' && (
-                          <button onClick={() => { setSelected(user); setShowDelete(true); }} className="p-1.5 hover:bg-red-50 rounded-lg" title="Delete">
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        <AnimatedContainer>
+          <AnimatedItem>
+            <Card padding={false}>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">User</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Email</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Phone</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Role</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Status</th>
+                      <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Joined</th>
+                      <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground uppercase">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(user => (
+                      <tr key={user.id} className="border-b border-gray-50 hover:bg-muted/50 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${user.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-primary-100 text-primary/90 dark:bg-primary-900/30 dark:text-primary-400'}`}>
+                              {user.first_name[0]}{user.last_name[0]}
+                            </div>
+                            <span className="text-sm font-medium text-foreground">{user.first_name} {user.last_name}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.email}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.phone || '—'}</td>
+                        <td className="py-3 px-4">
+                          <Badge variant={user.role === 'admin' ? 'purple' : 'default'}>
+                            {user.role === 'admin' && <Shield className="w-3 h-3 mr-1" />}
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          {user.is_verified ? (
+                            <Badge variant="success"><UserCheck className="w-3 h-3 mr-1" /> Verified</Badge>
+                          ) : (
+                            <Badge variant="warning"><UserX className="w-3 h-3 mr-1" /> Unverified</Badge>
+                          )}
+                        </td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{new Date(user.created_at).toLocaleDateString()}</td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex gap-1 justify-end">
+                            <button onClick={() => handleEdit(user)} className="p-1.5 hover:bg-muted rounded-lg transition-colors" title="Edit">
+                              <Edit className="w-4 h-4 text-muted-foreground" />
+                            </button>
+                            {user.role !== 'admin' && (
+                              <button onClick={() => { setSelected(user); setShowDelete(true); }} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete">
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </AnimatedItem>
+        </AnimatedContainer>
       )}
 
       {/* Edit Modal */}

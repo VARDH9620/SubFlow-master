@@ -220,6 +220,11 @@ export default function Register() {
                     <Input type="email" value={form.email} onChange={e => set('email', e.target.value)} required placeholder="name@company.com" className="h-12 bg-muted/30 focus:bg-card" />
                   </div>
 
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground tracking-tight">Phone (Optional)</label>
+                    <Input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+1 (555) 000-0000" className="h-12 bg-muted/30 focus:bg-card" />
+                  </div>
+
                   <div className="space-y-2 relative">
                     <label className="text-sm font-semibold text-foreground tracking-tight">Password</label>
                     <div className="relative">

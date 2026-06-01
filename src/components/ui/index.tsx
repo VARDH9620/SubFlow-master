@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import type { Toast } from '../../types';
@@ -199,10 +200,10 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
 
   const w: Record<string, string> = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl' };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 overflow-y-auto overflow-x-hidden">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-16 sm:pt-24 p-4 overflow-y-auto overflow-x-hidden">
           <motion.div
             variants={overlayVariants}
             initial="hidden" animate="show" exit="exit"
@@ -227,7 +228,8 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
 
@@ -472,5 +474,101 @@ export function ConfirmDialog({ open, onClose, onConfirm, title, message, confir
         <Button variant={variant === 'danger' ? 'danger' : 'primary'} onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</Button>
       </div>
     </Modal>
+  );
+}
+
+/* ================================================================
+   ANIMATIONS & SKELETONS — Global rollout components
+   ================================================================ */
+
+export function AnimatedContainer({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={{
+        hidden: { opacity: 0 },
+        show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function AnimatedItem({ children, className = '' }: { children: ReactNode; className?: string }) {
+  return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 300 } }
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function SkeletonCardGrid({ count = 6, cols = 'sm:grid-cols-2 lg:grid-cols-3' }: { count?: number; cols?: string }) {
+  return (
+    <div className={`grid gap-6 ${cols}`}>
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="rounded-xl border border-border bg-card/50 p-6 h-[220px] flex flex-col justify-between">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-12 h-12 rounded-xl skeleton flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <div className="h-5 w-3/4 rounded skeleton" />
+              <div className="h-4 w-1/3 rounded skeleton" />
+            </div>
+          </div>
+          <div className="space-y-2 mb-4">
+            <div className="h-4 w-full rounded skeleton" />
+            <div className="h-4 w-5/6 rounded skeleton" />
+          </div>
+          <div className="flex justify-between items-center pt-4 border-t border-border/50">
+            <div className="h-6 w-24 rounded skeleton" />
+            <div className="h-8 w-24 rounded skeleton" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function SkeletonTable({ columns = 5, rows = 5 }: { columns?: number; rows?: number }) {
+  return (
+    <Card padding={false}>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border">
+              {Array.from({ length: columns }).map((_, i) => (
+                <th key={i} className="text-left py-3 px-4"><div className="h-3 w-16 skeleton rounded" /></th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: rows }).map((_, i) => (
+              <tr key={i} className="border-b border-gray-50/10">
+                {Array.from({ length: columns }).map((_, j) => (
+                  <td key={j} className="py-4 px-4">
+                    {j === 0 ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full skeleton shrink-0" />
+                        <div className="h-4 w-24 skeleton rounded" />
+                      </div>
+                    ) : (
+                      <div className={`h-4 skeleton rounded ${j === columns - 1 ? 'w-8 ml-auto' : 'w-20'}`} />
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }
