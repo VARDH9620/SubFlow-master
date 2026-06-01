@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import * as db from '../../db/database';
-import { Card, StatCard, PageHeader, Badge, SearchBar, Tabs, Button, Modal, Textarea, EmptyState } from '../../components/ui';
+import { Card, StatCard, PageHeader, Badge, SearchBar, Tabs, Button, Modal, Textarea, EmptyState, AnimatedContainer, AnimatedItem, SkeletonCardGrid, SkeletonTable } from '../../components/ui';
 import { generateInvoicePDF } from '../../utils/invoicePdf';
 import type { Payment, PaymentStats } from '../../types';
 
@@ -30,14 +30,17 @@ export default function AdminPayments() {
   // Refund modal
   const [refundPaymentId, setRefundPaymentId] = useState<string | null>(null);
   const [refundReason, setRefundReason] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
+    setLoading(true);
     const [list, statsData] = await Promise.all([
       db.getAllPayments(),
       db.getPaymentStats()
     ]);
     setPayments(list);
     setStats(statsData);
+    setTimeout(() => setLoading(false), 200);
   };
 
   useEffect(() => { refresh(); }, []);
@@ -69,14 +72,26 @@ export default function AdminPayments() {
     else { setSortField(field); setSortDir('desc'); }
   };
 
-  if (!stats) return null;
-
   return (
     <div className="animate-fadeIn">
       <PageHeader title="Payments" description="All platform payments — synced with user billing in real-time" />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {loading || !stats ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+             <SkeletonCardGrid count={4} cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" />
+          </AnimatedItem>
+          <AnimatedItem className="mt-6">
+             <SkeletonCardGrid count={2} cols="grid-cols-1 lg:grid-cols-2" />
+          </AnimatedItem>
+          <AnimatedItem className="mt-6">
+             <SkeletonTable columns={8} rows={6} />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : (
+        <AnimatedContainer>
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard title="Total Collected" value={`$${stats.total_collected.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<DollarSign className="w-5 h-5" />} iconBg="bg-emerald-50 text-emerald-600" change={`${stats.successful_payments} transactions`} changeType="positive" />
         <StatCard title="Pending Invoices" value={`$${stats.total_pending.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<AlertCircle className="w-5 h-5" />} iconBg="bg-amber-50 text-amber-600" change="Awaiting payment" changeType="negative" />
         <StatCard title="Refunded" value={`$${stats.total_refunded.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<RotateCcw className="w-5 h-5" />} iconBg="bg-red-50 text-red-600" change={`${payments.filter(p => p.status === 'refunded').length} refunds`} />
@@ -247,6 +262,8 @@ export default function AdminPayments() {
             </table>
           </div>
         </Card>
+      )}
+        </AnimatedContainer>
       )}
 
       {/* Detail Modal */}

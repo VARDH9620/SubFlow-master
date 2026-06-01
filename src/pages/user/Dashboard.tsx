@@ -3,21 +3,21 @@ import { Link } from 'react-router-dom';
 import { CreditCard, TrendingUp, Calendar, Package, ArrowRight, Zap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import * as db from '../../db/database';
-import { Card, StatCard, Badge, Button, PageHeader } from '../../components/ui';
+import { Card, StatCard, Badge, Button, PageHeader, AnimatedContainer, AnimatedItem, SkeletonCardGrid, SkeletonTable } from '../../components/ui';
 import type { Subscription, Invoice } from '../../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { motion } from 'framer-motion';
-import { staggerContainer, staggerItem } from '../../design/animation';
 
 export default function UserDashboard() {
   const { user } = useAuth();
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [monthlySpend, setMonthlySpend] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     const loadData = async () => {
+      setLoading(true);
       // Parallel fetch for snappier load
       const [userSubs, userInvoices] = await Promise.all([
         db.getSubscriptionsByUser(user.id),
@@ -27,6 +27,7 @@ export default function UserDashboard() {
       setInvoices(userInvoices);
       const activeSpend = userSubs.filter(s => s.status === 'active').reduce((sum, s) => sum + (s.price || 0), 0);
       setMonthlySpend(activeSpend);
+      setTimeout(() => setLoading(false), 200);
     };
     loadData();
   }, [user]);
@@ -49,27 +50,37 @@ export default function UserDashboard() {
   });
 
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="show"
-    >
+    <div className="animate-fadeIn">
       <PageHeader
         title={`Welcome back, ${user?.first_name} 👋`}
         description="Here's an overview of your subscriptions and billing."
         action={<Link to="/services"><Button size="sm" className="gap-2"><Package className="w-4 h-4" /> Browse Services</Button></Link>}
       />
 
-      {/* Stats Grid */}
-      <motion.div variants={staggerItem} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Active Plans" value={activeSubs.length} icon={<CreditCard className="w-5 h-5" />} change={`${subs.length} total subscriptions`} />
-        <StatCard title="Monthly Spend" value={`$${monthlySpend.toFixed(2)}`} icon={<TrendingUp className="w-5 h-5" />} change="Based on active plans" />
-        <StatCard title="Pending Invoices" value={pendingInvoices.length} icon={<Calendar className="w-5 h-5" />} change={pendingInvoices.length > 0 ? 'Action required' : 'All clear'} changeType={pendingInvoices.length > 0 ? 'negative' : 'positive'} />
-        <StatCard title="Next Billing" value={activeSubs[0]?.end_date || 'N/A'} icon={<Zap className="w-5 h-5" />} />
-      </motion.div>
+      {loading ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+             <SkeletonCardGrid count={4} cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" />
+          </AnimatedItem>
+          <AnimatedItem className="mt-6">
+             <SkeletonCardGrid count={2} cols="grid-cols-1 lg:grid-cols-3" />
+          </AnimatedItem>
+          <AnimatedItem className="mt-6">
+             <SkeletonTable columns={5} rows={4} />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : (
+        <AnimatedContainer>
+          {/* Stats Grid */}
+          <AnimatedItem className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <StatCard title="Active Plans" value={activeSubs.length} icon={<CreditCard className="w-5 h-5" />} change={`${subs.length} total subscriptions`} />
+            <StatCard title="Monthly Spend" value={`$${monthlySpend.toFixed(2)}`} icon={<TrendingUp className="w-5 h-5" />} change="Based on active plans" />
+            <StatCard title="Pending Invoices" value={pendingInvoices.length} icon={<Calendar className="w-5 h-5" />} change={pendingInvoices.length > 0 ? 'Action required' : 'All clear'} changeType={pendingInvoices.length > 0 ? 'negative' : 'positive'} />
+            <StatCard title="Next Billing" value={activeSubs[0]?.end_date || 'N/A'} icon={<Zap className="w-5 h-5" />} />
+          </AnimatedItem>
 
-      <motion.div variants={staggerItem} className="grid lg:grid-cols-3 gap-6">
-        {/* Chart — Premium styling */}
+          <AnimatedItem className="grid lg:grid-cols-3 gap-6">
+            {/* Chart — Premium styling */}
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-foreground">Monthly Spending</h3>
@@ -129,10 +140,10 @@ export default function UserDashboard() {
             )}
           </div>
         </Card>
-      </motion.div>
+      </AnimatedItem>
 
       {/* Recent Invoices */}
-      <motion.div variants={staggerItem}>
+      <AnimatedItem>
         <Card className="mt-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-bold text-foreground">Recent Invoices</h3>
@@ -175,7 +186,9 @@ export default function UserDashboard() {
             </table>
           </div>
         </Card>
-      </motion.div>
-    </motion.div>
+      </AnimatedItem>
+        </AnimatedContainer>
+      )}
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import { FileText, Download, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import * as db from '../../db/database';
-import { Card, Badge, Button, PageHeader, EmptyState, SearchBar, Tabs } from '../../components/ui';
+import { Card, Badge, Button, PageHeader, EmptyState, SearchBar, Tabs, AnimatedContainer, AnimatedItem, SkeletonCardGrid, SkeletonTable } from '../../components/ui';
 import { generateInvoicePDF } from '../../utils/invoicePdf';
 import type { Invoice } from '../../types';
 
@@ -13,12 +13,15 @@ export default function Billing() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [search, setSearch] = useState('');
   const [tab, setTab] = useState('all');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
     const load = async () => {
+      setLoading(true);
       const list = await db.getInvoicesByUser(user.id);
       setInvoices(list);
+      setTimeout(() => setLoading(false), 200);
     };
     load();
   }, [user]);
@@ -61,35 +64,49 @@ export default function Billing() {
         }
       />
 
-      {/* Summary cards */}
-      <div className="grid sm:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <p className="text-sm text-muted-foreground dark:text-slate-300">Total Paid</p>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">${totalPaid.toFixed(2)}</p>
-        </Card>
-        <Card>
-          <p className="text-sm text-muted-foreground dark:text-slate-300">Pending</p>
-          <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">${totalPending.toFixed(2)}</p>
-        </Card>
-        <Card>
-          <p className="text-sm text-muted-foreground dark:text-slate-300">Total Invoices</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{invoices.length}</p>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-        <Tabs tabs={tabs} active={tab} onChange={setTab} />
-        <div className="w-full sm:w-64">
-          <SearchBar value={search} onChange={setSearch} placeholder="Search invoices..." />
-        </div>
-      </div>
-
-      {/* Invoices table */}
-      {filtered.length === 0 ? (
-        <EmptyState icon={<FileText className="w-10 h-10" />} title="No invoices found" description="No invoices match your current filters" />
+      {loading ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+             <SkeletonCardGrid count={3} cols="grid-cols-1 sm:grid-cols-3" />
+          </AnimatedItem>
+          <AnimatedItem className="mt-6">
+             <SkeletonTable columns={9} rows={5} />
+          </AnimatedItem>
+        </AnimatedContainer>
       ) : (
-        <Card padding={false}>
+        <AnimatedContainer>
+          {/* Summary cards */}
+          <AnimatedItem className="grid sm:grid-cols-3 gap-4 mb-6">
+            <Card>
+              <p className="text-sm text-muted-foreground dark:text-slate-300">Total Paid</p>
+              <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">${totalPaid.toFixed(2)}</p>
+            </Card>
+            <Card>
+              <p className="text-sm text-muted-foreground dark:text-slate-300">Pending</p>
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">${totalPending.toFixed(2)}</p>
+            </Card>
+            <Card>
+              <p className="text-sm text-muted-foreground dark:text-slate-300">Total Invoices</p>
+              <p className="text-2xl font-bold text-foreground mt-1">{invoices.length}</p>
+            </Card>
+          </AnimatedItem>
+
+          {/* Filters */}
+          <AnimatedItem className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+            <Tabs tabs={tabs} active={tab} onChange={setTab} />
+            <div className="w-full sm:w-64">
+              <SearchBar value={search} onChange={setSearch} placeholder="Search invoices..." />
+            </div>
+          </AnimatedItem>
+
+          {/* Invoices table */}
+          {filtered.length === 0 ? (
+            <AnimatedItem>
+              <EmptyState icon={<FileText className="w-10 h-10" />} title="No invoices found" description="No invoices match your current filters" />
+            </AnimatedItem>
+          ) : (
+            <AnimatedItem>
+              <Card padding={false}>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -141,7 +158,10 @@ export default function Billing() {
               </tbody>
             </table>
           </div>
-        </Card>
+          </Card>
+            </AnimatedItem>
+          )}
+        </AnimatedContainer>
       )}
     </div>
   );

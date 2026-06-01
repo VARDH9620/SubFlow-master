@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { LifeBuoy, Plus, Clock, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import * as db from '../../db/database';
-import { Card, Badge, Button, PageHeader, Modal, Input, Textarea, Select, EmptyState, Tabs } from '../../components/ui';
+import { Card, Badge, Button, PageHeader, Modal, Input, Textarea, Select, EmptyState, Tabs, AnimatedContainer, AnimatedItem, SkeletonCardGrid } from '../../components/ui';
 import type { SupportTicket, TicketMessage, TicketStatus } from '../../types';
 
 const statusColors: Record<TicketStatus, 'info' | 'warning' | 'success' | 'default'> = {
@@ -20,13 +20,16 @@ export default function Support() {
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [messages, setMessages] = useState<TicketMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const [createForm, setCreateForm] = useState({ subject: '', description: '', category: 'General', priority: 'medium' as 'low' | 'medium' | 'high' | 'critical' });
 
   const refresh = async () => {
     if (user) {
+      setLoading(true);
       const list = await db.getTicketsByUser(user.id);
       setTickets(list);
+      setTimeout(() => setLoading(false), 200);
     }
   };
 
@@ -74,35 +77,47 @@ export default function Support() {
 
       <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
-      <div className="mt-4">
-        {filtered.length === 0 ? (
-          <EmptyState icon={<LifeBuoy className="w-10 h-10" />} title="No support tickets" description="You haven't created any support tickets yet" action={<Button onClick={() => setShowCreate(true)}>Create Ticket</Button>} />
-        ) : (
-          <div className="space-y-3">
-            {filtered.map(ticket => (
-              <Card key={ticket.id} className="cursor-pointer hover:shadow-md transition-shadow" padding={false}>
-                <div className="p-4 flex items-center gap-4" onClick={() => handleViewTicket(ticket)}>
-                  <div className={`p-2.5 rounded-lg ${ticket.status === 'open' ? 'bg-blue-50 text-blue-600' : ticket.status === 'in_progress' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                    <MessageSquare className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-foreground truncate">{ticket.subject}</h4>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{ticket.description}</p>
-                    <div className="flex items-center gap-3 mt-1.5">
-                      <span className="text-xs text-muted-foreground/80 flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(ticket.created_at).toLocaleDateString()}</span>
-                      <Badge>{ticket.category}</Badge>
-                      <Badge variant={ticket.priority === 'critical' ? 'danger' : ticket.priority === 'high' ? 'warning' : 'default'}>
-                        {ticket.priority}
-                      </Badge>
+      {loading ? (
+        <AnimatedContainer className="mt-4">
+          <AnimatedItem>
+             <SkeletonCardGrid count={3} cols="grid-cols-1" />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : (
+        <AnimatedContainer className="mt-4">
+          {filtered.length === 0 ? (
+            <AnimatedItem>
+              <EmptyState icon={<LifeBuoy className="w-10 h-10" />} title="No support tickets" description="You haven't created any support tickets yet" action={<Button onClick={() => setShowCreate(true)}>Create Ticket</Button>} />
+            </AnimatedItem>
+          ) : (
+            <div className="space-y-3">
+              {filtered.map(ticket => (
+                <AnimatedItem key={ticket.id}>
+                  <Card className="cursor-pointer hover:shadow-md transition-shadow" padding={false}>
+                    <div className="p-4 flex items-center gap-4" onClick={() => handleViewTicket(ticket)}>
+                      <div className={`p-2.5 rounded-lg ${ticket.status === 'open' ? 'bg-blue-50 text-blue-600' : ticket.status === 'in_progress' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-sm font-semibold text-foreground truncate">{ticket.subject}</h4>
+                        <p className="text-xs text-muted-foreground truncate mt-0.5">{ticket.description}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className="text-xs text-muted-foreground/80 flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(ticket.created_at).toLocaleDateString()}</span>
+                          <Badge>{ticket.category}</Badge>
+                          <Badge variant={ticket.priority === 'critical' ? 'danger' : ticket.priority === 'high' ? 'warning' : 'default'}>
+                            {ticket.priority}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Badge variant={statusColors[ticket.status]}>{ticket.status.replace('_', ' ')}</Badge>
                     </div>
-                  </div>
-                  <Badge variant={statusColors[ticket.status]}>{ticket.status.replace('_', ' ')}</Badge>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </div>
+                  </Card>
+                </AnimatedItem>
+              ))}
+            </div>
+          )}
+        </AnimatedContainer>
+      )}
 
       {/* Create Ticket Modal */}
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Create Support Ticket" size="md">

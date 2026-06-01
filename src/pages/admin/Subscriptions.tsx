@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CreditCard, RefreshCw } from 'lucide-react';
 import * as db from '../../db/database';
-import { Card, PageHeader, Badge, SearchBar, Tabs, Button, EmptyState, ConfirmDialog, Select } from '../../components/ui';
+import { Card, PageHeader, Badge, SearchBar, Tabs, Button, EmptyState, ConfirmDialog, Select, AnimatedContainer, AnimatedItem, SkeletonTable } from '../../components/ui';
 import type { Subscription, SubscriptionStatus } from '../../types';
 
 const statusBadge: Record<SubscriptionStatus, 'success' | 'warning' | 'danger' | 'default'> = {
@@ -14,8 +14,13 @@ export default function AdminSubscriptions() {
   const [tab, setTab] = useState('all');
   const [actionSub, setActionSub] = useState<Subscription | null>(null);
   const [newStatus, setNewStatus] = useState<SubscriptionStatus>('active');
+  const [loading, setLoading] = useState(true);
 
-  const refresh = async () => setSubs(await db.getAllSubscriptions());
+  const refresh = async () => {
+    setLoading(true);
+    setSubs(await db.getAllSubscriptions());
+    setTimeout(() => setLoading(false), 200);
+  };
   useEffect(() => { refresh(); }, []);
 
   const tabs = [
@@ -45,49 +50,63 @@ export default function AdminSubscriptions() {
         <div className="w-full sm:w-64"><SearchBar value={search} onChange={setSearch} placeholder="Search by user or service..." /></div>
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState icon={<CreditCard className="w-10 h-10" />} title="No subscriptions" description="No subscriptions match your filters" />
+      {loading ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <SkeletonTable columns={9} rows={6} />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : filtered.length === 0 ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <EmptyState icon={<CreditCard className="w-10 h-10" />} title="No subscriptions" description="No subscriptions match your filters" />
+          </AnimatedItem>
+        </AnimatedContainer>
       ) : (
-        <Card padding={false}>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border dark:border-dark-surface-3/60">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">User</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Service</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Plan</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Price</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Status</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Start</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">End</th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Auto</th>
-                <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(sub => (
-                <tr key={sub.id} className="border-b border-border/50 dark:border-dark-surface-3/40 hover:bg-muted/50/50 dark:hover:bg-primary-900/10 transition-colors">
-                  <td className="py-3 px-4">
-                    <div><p className="text-sm font-medium text-foreground">{sub.user_name}</p><p className="text-xs text-muted-foreground/80 dark:text-slate-400">{sub.user_email}</p></div>
-                  </td>
-                  <td className="py-3 px-4 text-sm text-foreground/90">{sub.service_name}</td>
-                  <td className="py-3 px-4 text-sm text-foreground/90">{sub.plan_name}</td>
-                  <td className="py-3 px-4 text-sm font-medium text-foreground">${(sub.price || 0).toFixed(2)}</td>
-                  <td className="py-3 px-4"><Badge variant={statusBadge[sub.status]}>{sub.status}</Badge></td>
-                  <td className="py-3 px-4 text-sm text-muted-foreground dark:text-slate-300">{sub.start_date}</td>
-                  <td className="py-3 px-4 text-sm text-muted-foreground dark:text-slate-300">{sub.end_date}</td>
-                  <td className="py-3 px-4">{sub.auto_renew ? <Badge variant="info">On</Badge> : <Badge>Off</Badge>}</td>
-                  <td className="py-3 px-4 text-right">
-                    <Button size="sm" variant="ghost" onClick={() => { setActionSub(sub); setNewStatus(sub.status); }}>
-                      Change
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        </Card>
+        <AnimatedContainer>
+          <AnimatedItem>
+            <Card padding={false}>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border dark:border-dark-surface-3/60">
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">User</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Service</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Plan</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Price</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Status</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Start</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">End</th>
+                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Auto</th>
+                    <th className="text-right py-3 px-4 text-xs font-semibold text-muted-foreground dark:text-slate-300 uppercase">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(sub => (
+                    <tr key={sub.id} className="border-b border-border/50 dark:border-dark-surface-3/40 hover:bg-muted/50 dark:hover:bg-primary-900/10 transition-colors">
+                      <td className="py-3 px-4">
+                        <div><p className="text-sm font-medium text-foreground">{sub.user_name}</p><p className="text-xs text-muted-foreground/80 dark:text-slate-400">{sub.user_email}</p></div>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-foreground/90">{sub.service_name}</td>
+                      <td className="py-3 px-4 text-sm text-foreground/90">{sub.plan_name}</td>
+                      <td className="py-3 px-4 text-sm font-medium text-foreground">${(sub.price || 0).toFixed(2)}</td>
+                      <td className="py-3 px-4"><Badge variant={statusBadge[sub.status]}>{sub.status}</Badge></td>
+                      <td className="py-3 px-4 text-sm text-muted-foreground dark:text-slate-300">{sub.start_date}</td>
+                      <td className="py-3 px-4 text-sm text-muted-foreground dark:text-slate-300">{sub.end_date}</td>
+                      <td className="py-3 px-4">{sub.auto_renew ? <Badge variant="info">On</Badge> : <Badge>Off</Badge>}</td>
+                      <td className="py-3 px-4 text-right">
+                        <Button size="sm" variant="ghost" onClick={() => { setActionSub(sub); setNewStatus(sub.status); }}>
+                          Change
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            </Card>
+          </AnimatedItem>
+        </AnimatedContainer>
       )}
 
       {/* Status change dialog */}

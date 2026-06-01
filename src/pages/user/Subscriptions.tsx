@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CreditCard, Pause, Play, XCircle, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import * as db from '../../db/database';
-import { Card, Badge, Button, PageHeader, EmptyState, ConfirmDialog } from '../../components/ui';
+import { Card, Badge, Button, PageHeader, EmptyState, ConfirmDialog, AnimatedContainer, AnimatedItem, SkeletonCardGrid } from '../../components/ui';
 import type { Subscription, SubscriptionStatus } from '../../types';
 
 const statusConfig: Record<SubscriptionStatus, { variant: 'success' | 'warning' | 'danger' | 'default'; label: string }> = {
@@ -17,11 +17,14 @@ export default function Subscriptions() {
   const [subs, setSubs] = useState<Subscription[]>([]);
   const [filter, setFilter] = useState<SubscriptionStatus | 'all'>('all');
   const [confirmAction, setConfirmAction] = useState<{ id: string; action: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
     if (!user) return;
+    setLoading(true);
     const userSubs = await db.getSubscriptionsByUser(user.id);
     setSubs(userSubs);
+    setTimeout(() => setLoading(false), 200);
   };
 
   useEffect(() => { refresh(); }, [user]);
@@ -74,71 +77,83 @@ export default function Subscriptions() {
         ))}
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState
-          icon={<CreditCard className="w-10 h-10" />}
-          title="No subscriptions found"
-          description={filter === 'all' ? "You haven't subscribed to any plans yet" : `No ${filter} subscriptions`}
-          action={<Button onClick={() => window.location.href = '/services'}>Browse Services</Button>}
-        />
+      {loading ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <SkeletonCardGrid count={3} cols="grid-cols-1" />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : filtered.length === 0 ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <EmptyState
+              icon={<CreditCard className="w-10 h-10" />}
+              title="No subscriptions found"
+              description={filter === 'all' ? "You haven't subscribed to any plans yet" : `No ${filter} subscriptions`}
+              action={<Button onClick={() => window.location.href = '/services'}>Browse Services</Button>}
+            />
+          </AnimatedItem>
+        </AnimatedContainer>
       ) : (
-        <div className="grid gap-4">
+        <AnimatedContainer className="grid gap-4">
           {filtered.map(sub => {
             const cfg = statusConfig[sub.status];
             return (
-              <Card key={sub.id} className="hover:shadow-md transition-shadow">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-primary-50 dark:bg-primary-500/10 text-primary rounded-xl">
-                      <CreditCard className="w-5 h-5" />
+              <AnimatedItem key={sub.id}>
+                <Card className="hover:shadow-md transition-shadow">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="p-3 bg-primary-50 dark:bg-primary-500/10 text-primary rounded-xl">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-foreground">{sub.service_name}</h3>
+                        <p className="text-sm text-muted-foreground dark:text-slate-300">{sub.plan_name} · ${sub.price}/mo</p>
+                        <div className="flex gap-4 mt-2 text-xs text-muted-foreground/80 dark:text-slate-400">
+                          <span>Started: {sub.start_date}</span>
+                          <span>Ends: {sub.end_date}</span>
+                          {sub.trial_end && <span>Trial until: {sub.trial_end}</span>}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">{sub.service_name}</h3>
-                      <p className="text-sm text-muted-foreground dark:text-slate-300">{sub.plan_name} · ${sub.price}/mo</p>
-                      <div className="flex gap-4 mt-2 text-xs text-muted-foreground/80 dark:text-slate-400">
-                        <span>Started: {sub.start_date}</span>
-                        <span>Ends: {sub.end_date}</span>
-                        {sub.trial_end && <span>Trial until: {sub.trial_end}</span>}
+
+                    <div className="flex items-center gap-3">
+                      <Badge variant={cfg.variant}>{cfg.label}</Badge>
+                      {sub.auto_renew && (
+                        <Badge variant="info">
+                          <RefreshCw className="w-3 h-3 mr-1" /> Auto-renew
+                        </Badge>
+                      )}
+
+                      <div className="flex gap-1">
+                        {sub.status === 'active' && (
+                          <>
+                            <button onClick={() => setConfirmAction({ id: sub.id, action: 'pause' })} className="p-2 hover:bg-muted dark:hover:bg-dark-surface-3/60 rounded-lg cursor-pointer" title="Pause">
+                              <Pause className="w-4 h-4 text-muted-foreground dark:text-slate-300" />
+                            </button>
+                            <button onClick={() => setConfirmAction({ id: sub.id, action: 'cancel' })} className="p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer" title="Cancel">
+                              <XCircle className="w-4 h-4 text-red-500" />
+                            </button>
+                          </>
+                        )}
+                        {sub.status === 'paused' && (
+                          <>
+                            <button onClick={() => setConfirmAction({ id: sub.id, action: 'resume' })} className="p-2 hover:bg-muted dark:hover:bg-dark-surface-3/60 rounded-lg cursor-pointer" title="Resume">
+                              <Play className="w-4 h-4 text-emerald-500" />
+                            </button>
+                            <button onClick={() => setConfirmAction({ id: sub.id, action: 'cancel' })} className="p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer" title="Cancel">
+                              <XCircle className="w-4 h-4 text-red-500" />
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <Badge variant={cfg.variant}>{cfg.label}</Badge>
-                    {sub.auto_renew && (
-                      <Badge variant="info">
-                        <RefreshCw className="w-3 h-3 mr-1" /> Auto-renew
-                      </Badge>
-                    )}
-
-                    <div className="flex gap-1">
-                      {sub.status === 'active' && (
-                        <>
-                          <button onClick={() => setConfirmAction({ id: sub.id, action: 'pause' })} className="p-2 hover:bg-muted dark:hover:bg-dark-surface-3/60 rounded-lg cursor-pointer" title="Pause">
-                            <Pause className="w-4 h-4 text-muted-foreground dark:text-slate-300" />
-                          </button>
-                          <button onClick={() => setConfirmAction({ id: sub.id, action: 'cancel' })} className="p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer" title="Cancel">
-                            <XCircle className="w-4 h-4 text-red-500" />
-                          </button>
-                        </>
-                      )}
-                      {sub.status === 'paused' && (
-                        <>
-                          <button onClick={() => setConfirmAction({ id: sub.id, action: 'resume' })} className="p-2 hover:bg-muted dark:hover:bg-dark-surface-3/60 rounded-lg cursor-pointer" title="Resume">
-                            <Play className="w-4 h-4 text-emerald-500" />
-                          </button>
-                          <button onClick={() => setConfirmAction({ id: sub.id, action: 'cancel' })} className="p-2 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer" title="Cancel">
-                            <XCircle className="w-4 h-4 text-red-500" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </AnimatedItem>
             );
           })}
-        </div>
+        </AnimatedContainer>
       )}
 
       <ConfirmDialog

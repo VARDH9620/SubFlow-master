@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Trash2, Edit, Check, Package } from 'lucide-react';
 import * as db from '../../db/database';
-import { Card, Button, PageHeader, Badge, Modal, Input, Textarea, Select, ConfirmDialog, EmptyState, SearchBar } from '../../components/ui';
+import { Card, Button, PageHeader, Badge, Modal, Input, Textarea, Select, ConfirmDialog, EmptyState, SearchBar, AnimatedContainer, AnimatedItem, SkeletonCardGrid } from '../../components/ui';
 import type { Plan, Service, BillingCycle } from '../../types';
 
 const emptyForm = { service_id: '', name: '', description: '', price: 9.99, billing_cycle: 'monthly' as BillingCycle, features: [''], trial_days: 14, status: 'active' as 'active' | 'archived', max_users: 1 };
@@ -15,11 +15,14 @@ export default function AdminPlans() {
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
+    setLoading(true);
     const [plns, svcs] = await Promise.all([db.getAllPlans(), db.getAllServices()]);
     setPlans(plns);
     setServices(svcs);
+    setTimeout(() => setLoading(false), 200);
   };
   useEffect(() => { refresh(); }, []);
 
@@ -65,39 +68,51 @@ export default function AdminPlans() {
         <div className="w-full sm:w-64"><SearchBar value={search} onChange={setSearch} /></div>
       </div>
 
-      {filtered.length === 0 ? (
-        <EmptyState icon={<Package className="w-10 h-10" />} title="No plans found" description="Create your first plan" action={<Button onClick={openCreate}>Add Plan</Button>} />
+      {loading ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <SkeletonCardGrid count={6} />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : filtered.length === 0 ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+            <EmptyState icon={<Package className="w-10 h-10" />} title="No plans found" description="Create your first plan" action={<Button onClick={openCreate}>Add Plan</Button>} />
+          </AnimatedItem>
+        </AnimatedContainer>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <AnimatedContainer className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map(plan => (
-            <Card key={plan.id}>
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="font-semibold text-foreground">{plan.name}</h3>
-                  <p className="text-xs text-muted-foreground dark:text-slate-300">{getSvcName(plan.service_id)}</p>
+            <AnimatedItem key={plan.id}>
+              <Card>
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 className="font-semibold text-foreground">{plan.name}</h3>
+                    <p className="text-xs text-muted-foreground dark:text-slate-300">{getSvcName(plan.service_id)}</p>
+                  </div>
+                  <Badge variant={plan.status === 'active' ? 'success' : 'default'}>{plan.status}</Badge>
                 </div>
-                <Badge variant={plan.status === 'active' ? 'success' : 'default'}>{plan.status}</Badge>
-              </div>
-              <div className="my-3">
-                <span className="text-2xl font-bold text-foreground dark:text-white">${plan.price.toFixed(2)}</span>
-                <span className="text-sm text-muted-foreground dark:text-slate-300">/{plan.billing_cycle === 'monthly' ? 'mo' : plan.billing_cycle === 'annual' ? 'yr' : 'qtr'}</span>
-              </div>
-              <ul className="space-y-1 mb-4">
-                {plan.features.slice(0, 3).map((f, i) => (
-                  <li key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-slate-300"><Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" /> {f}</li>
-                ))}
-                {plan.features.length > 3 && <li className="text-xs text-muted-foreground/80 dark:text-slate-400">+{plan.features.length - 3} more</li>}
-              </ul>
-              <div className="flex items-center justify-between pt-3 border-t border-border/50 dark:border-dark-surface-3/60">
-                <span className="text-xs text-muted-foreground/80 dark:text-slate-400">Trial: {plan.trial_days}d · Max: {plan.max_users} users</span>
-                <div className="flex gap-1">
-                  <button onClick={() => openEdit(plan)} className="p-1.5 hover:bg-muted dark:hover:bg-dark-surface-3/60 rounded-lg cursor-pointer"><Edit className="w-4 h-4 text-muted-foreground dark:text-slate-300" /></button>
-                  <button onClick={() => setDeleteId(plan.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                <div className="my-3">
+                  <span className="text-2xl font-bold text-foreground dark:text-white">${plan.price.toFixed(2)}</span>
+                  <span className="text-sm text-muted-foreground dark:text-slate-300">/{plan.billing_cycle === 'monthly' ? 'mo' : plan.billing_cycle === 'annual' ? 'yr' : 'qtr'}</span>
                 </div>
-              </div>
-            </Card>
+                <ul className="space-y-1 mb-4">
+                  {plan.features.slice(0, 3).map((f, i) => (
+                    <li key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-slate-300"><Check className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" /> {f}</li>
+                  ))}
+                  {plan.features.length > 3 && <li className="text-xs text-muted-foreground/80 dark:text-slate-400">+{plan.features.length - 3} more</li>}
+                </ul>
+                <div className="flex items-center justify-between pt-3 border-t border-border/50 dark:border-dark-surface-3/60">
+                  <span className="text-xs text-muted-foreground/80 dark:text-slate-400">Trial: {plan.trial_days}d · Max: {plan.max_users} users</span>
+                  <div className="flex gap-1">
+                    <button onClick={() => openEdit(plan)} className="p-1.5 hover:bg-muted dark:hover:bg-dark-surface-3/60 rounded-lg cursor-pointer"><Edit className="w-4 h-4 text-muted-foreground dark:text-slate-300" /></button>
+                    <button onClick={() => setDeleteId(plan.id)} className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg cursor-pointer"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                  </div>
+                </div>
+              </Card>
+            </AnimatedItem>
           ))}
-        </div>
+        </AnimatedContainer>
       )}
 
       {/* Modal */}

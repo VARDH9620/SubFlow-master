@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Users, CreditCard, DollarSign, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import * as db from '../../db/database';
-import { Card, StatCard, Badge, PageHeader } from '../../components/ui';
+import { Card, StatCard, Badge, PageHeader, AnimatedContainer, AnimatedItem, SkeletonCardGrid } from '../../components/ui';
 import type { DashboardStats, ChartDataPoint } from '../../types';
 
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'];
@@ -34,13 +34,21 @@ export default function AdminDashboard() {
 
   if (!stats) return (
     <div className="animate-fadeIn">
-      <div className="h-8 w-48 skeleton rounded-lg mb-6" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {[...Array(4)].map((_, i) => <div key={i} className="h-28 skeleton rounded-xl" />)}
-      </div>
-      <div className="grid lg:grid-cols-2 gap-6 mb-6">
-        {[...Array(2)].map((_, i) => <div key={i} className="h-80 skeleton rounded-xl" />)}
-      </div>
+      <PageHeader
+        title="Admin Dashboard"
+        description="Overview of platform performance and metrics"
+      />
+      <AnimatedContainer>
+        <AnimatedItem>
+          <SkeletonCardGrid count={4} cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" />
+        </AnimatedItem>
+        <AnimatedItem className="mt-6">
+          <SkeletonCardGrid count={2} cols="grid-cols-1 lg:grid-cols-2" />
+        </AnimatedItem>
+        <AnimatedItem className="mt-6">
+          <SkeletonCardGrid count={2} cols="grid-cols-1 lg:grid-cols-3" />
+        </AnimatedItem>
+      </AnimatedContainer>
     </div>
   );
 
@@ -51,44 +59,45 @@ export default function AdminDashboard() {
         description="Overview of platform performance and metrics"
       />
 
-      {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard
-          title="Total Users"
-          value={stats.total_users}
-          icon={<Users className="w-5 h-5" />}
-          iconBg="bg-blue-50 text-blue-600"
-          change={`+${stats.new_users_this_month} this month`}
-          changeType="positive"
-        />
-        <StatCard
-          title="Active Subscriptions"
-          value={stats.active_subscriptions}
-          icon={<CreditCard className="w-5 h-5" />}
-          iconBg="bg-emerald-50 text-emerald-600"
-          change={`${stats.churn_rate}% churn rate`}
-          changeType={stats.churn_rate > 5 ? 'negative' : 'positive'}
-        />
-        <StatCard
-          title="Monthly Revenue"
-          value={`$${stats.monthly_revenue.toLocaleString()}`}
-          icon={<DollarSign className="w-5 h-5" />}
-          iconBg="bg-purple-50 text-purple-600"
-          change={`+${stats.revenue_growth}% growth`}
-          changeType="positive"
-        />
-        <StatCard
-          title="Open Tickets"
-          value={stats.pending_tickets}
-          icon={<AlertCircle className="w-5 h-5" />}
-          iconBg="bg-amber-50 text-amber-600"
-          change={`${stats.total_services} services`}
-          changeType="neutral"
-        />
-      </div>
+      <AnimatedContainer>
+        {/* Stats row */}
+        <AnimatedItem className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <StatCard
+            title="Total Users"
+            value={stats.total_users}
+            icon={<Users className="w-5 h-5" />}
+            iconBg="bg-blue-50 text-blue-600"
+            change={`+${stats.new_users_this_month} this month`}
+            changeType="positive"
+          />
+          <StatCard
+            title="Active Subscriptions"
+            value={stats.active_subscriptions}
+            icon={<CreditCard className="w-5 h-5" />}
+            iconBg="bg-emerald-50 text-emerald-600"
+            change={`${stats.churn_rate}% churn rate`}
+            changeType={stats.churn_rate > 5 ? 'negative' : 'positive'}
+          />
+          <StatCard
+            title="Monthly Revenue"
+            value={`$${stats.monthly_revenue.toLocaleString()}`}
+            icon={<DollarSign className="w-5 h-5" />}
+            iconBg="bg-purple-50 text-purple-600"
+            change={`+${stats.revenue_growth}% growth`}
+            changeType="positive"
+          />
+          <StatCard
+            title="Open Tickets"
+            value={stats.pending_tickets}
+            icon={<AlertCircle className="w-5 h-5" />}
+            iconBg="bg-amber-50 text-amber-600"
+            change={`${stats.total_services} services`}
+            changeType="neutral"
+          />
+        </AnimatedItem>
 
-      {/* Charts row */}
-      <div className="grid lg:grid-cols-2 gap-6 mb-6">
+        {/* Charts row */}
+        <AnimatedItem className="grid lg:grid-cols-2 gap-6 mb-6">
         {/* Revenue Chart */}
         <Card>
           <div className="flex items-center justify-between mb-4">
@@ -135,10 +144,10 @@ export default function AdminDashboard() {
             </ResponsiveContainer>
           </div>
         </Card>
-      </div>
+        </AnimatedItem>
 
-      {/* Bottom row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Bottom row */}
+        <AnimatedItem className="grid lg:grid-cols-3 gap-6">
         {/* Subscription trend */}
         <Card className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
@@ -186,8 +195,9 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-        </Card>
-      </div>
+            </Card>
+          </AnimatedItem>
+      </AnimatedContainer>
     </div>
   );
 }

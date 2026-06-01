@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DollarSign, FileText, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import * as db from '../../db/database';
-import { Card, StatCard, PageHeader, Badge, SearchBar, Tabs } from '../../components/ui';
+import { Card, StatCard, PageHeader, Badge, SearchBar, Tabs, AnimatedContainer, AnimatedItem, SkeletonCardGrid, SkeletonTable } from '../../components/ui';
 import { generateInvoicePDF } from '../../utils/invoicePdf';
 import type { Invoice } from '../../types';
 
@@ -10,11 +10,14 @@ export default function AdminRevenue() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [tab, setTab] = useState('all');
   const [search, setSearch] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       const list = await db.getAllInvoices();
       setInvoices(list);
+      setTimeout(() => setLoading(false), 200);
     };
     loadData();
   }, []);
@@ -59,12 +62,26 @@ export default function AdminRevenue() {
     <div className="animate-fadeIn">
       <PageHeader title="Revenue & Billing" description="Track revenue, manage invoices, and financial analytics" />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Total Revenue" value={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<DollarSign className="w-5 h-5" />} iconBg="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" change="All time" changeType="positive" />
-        <StatCard title="Pending" value={`$${totalPending.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<FileText className="w-5 h-5" />} iconBg="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" change="Awaiting payment" changeType="negative" />
-        <StatCard title="Refunded" value={`$${totalRefunded.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<FileText className="w-5 h-5" />} iconBg="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400" />
-        <StatCard title="Total Invoices" value={invoices.length} icon={<FileText className="w-5 h-5" />} iconBg="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" />
-      </div>
+      {loading ? (
+        <AnimatedContainer>
+          <AnimatedItem>
+             <SkeletonCardGrid count={4} cols="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" />
+          </AnimatedItem>
+          <AnimatedItem className="mt-6">
+             <SkeletonCardGrid count={1} cols="grid-cols-1" />
+          </AnimatedItem>
+          <AnimatedItem className="mt-6">
+             <SkeletonTable columns={10} rows={6} />
+          </AnimatedItem>
+        </AnimatedContainer>
+      ) : (
+        <AnimatedContainer>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <StatCard title="Total Revenue" value={`$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<DollarSign className="w-5 h-5" />} iconBg="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400" change="All time" changeType="positive" />
+            <StatCard title="Pending" value={`$${totalPending.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<FileText className="w-5 h-5" />} iconBg="bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400" change="Awaiting payment" changeType="negative" />
+            <StatCard title="Refunded" value={`$${totalRefunded.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} icon={<FileText className="w-5 h-5" />} iconBg="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400" />
+            <StatCard title="Total Invoices" value={invoices.length} icon={<FileText className="w-5 h-5" />} iconBg="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" />
+          </div>
 
       <Card className="lg:col-span-2 mb-6">
         <h3 className="text-sm font-semibold text-foreground mb-4">Revenue Overview</h3>
@@ -137,6 +154,8 @@ export default function AdminRevenue() {
           </table>
         </div>
       </Card>
+        </AnimatedContainer>
+      )}
     </div>
   );
 }
