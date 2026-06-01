@@ -7,17 +7,17 @@ import type { Variants, Transition } from 'framer-motion';
    TIMING CONSTANTS
    ================================================================ */
 export const timing = {
-  micro: 0.18,
-  medium: 0.35,
-  hero: 0.7,
+  micro: 0.25,
+  medium: 0.45,
+  hero: 0.8,
 } as const;
 
 /* ================================================================
    SPRING CONFIGS
    ================================================================ */
-export const springSnappy: Transition = { type: 'spring', stiffness: 500, damping: 30 };
-export const springGentle: Transition = { type: 'spring', stiffness: 260, damping: 25 };
-export const springBouncy: Transition = { type: 'spring', stiffness: 400, damping: 17 };
+export const springSnappy: Transition = { type: 'spring', stiffness: 220, damping: 26 };
+export const springGentle: Transition = { type: 'spring', stiffness: 140, damping: 22 };
+export const springBouncy: Transition = { type: 'spring', stiffness: 180, damping: 16 };
 
 /* ================================================================
    PAGE / SECTION VARIANTS
@@ -58,8 +58,8 @@ export const staggerContainer: Variants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
+      staggerChildren: 0.06,
+      delayChildren: 0.08,
     },
   },
 };
@@ -69,8 +69,8 @@ export const staggerFast: Variants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.05,
+      staggerChildren: 0.03,
+      delayChildren: 0.04,
     },
   },
 };
@@ -80,7 +80,7 @@ export const staggerItem: Variants = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { type: 'spring', stiffness: 100, damping: 15 },
+    transition: { type: 'spring', stiffness: 100, damping: 18 },
   },
 };
 

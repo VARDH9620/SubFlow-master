@@ -7,53 +7,61 @@
    LIGHT THEME — Premium Apple / Stripe Aesthetic
    ================================================================ */
 :root {
+  --background: #fafafa;
+  --foreground: #09090b;
   --card: #ffffff;
-  --ring: #6366f1;
-  --input: #e2e8f0;
-  --muted: #f1f5f9;
-  --accent: #eef2ff;
-  --border: #e2e8f0;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  
+  --primary: #4f46e5;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  
+  --border: rgba(0, 0, 0, 0.06);
+  --input: rgba(0, 0, 0, 0.1);
+  --ring: #4f46e5;
   --radius: 0.625rem;
-  --chart-1: #6366f1;
-  --chart-2: #8b5cf6;
+
+  --chart-1: #4f46e5;
+  --chart-2: #7c3aed;
   --chart-3: #a78bfa;
   --chart-4: #c4b5fd;
   --chart-5: #ddd6fe;
-  --popover: #ffffff;
-  --primary: #6366f1;
-  --sidebar: #f8fafc;
+
+  --sidebar: #ffffff;
+  --sidebar-ring: #4f46e5;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-border: rgba(0, 0, 0, 0.06);
+  --sidebar-primary: #4f46e5;
+  --sidebar-foreground: #09090b;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-primary-foreground: #ffffff;
+
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --secondary: #f1f5f9;
-  --background: #f8fafc;
   --font-serif: "Merriweather", serif;
-  --foreground: #0f172a;
-  --destructive: #ef4444;
 
   /* Premium additions */
-  --glow-primary: rgba(99, 102, 241, 0.15);
-  --glow-accent: rgba(139, 92, 246, 0.1);
-  --surface-glass: rgba(255, 255, 255, 0.7);
-  --surface-elevated: rgba(255, 255, 255, 0.9);
-  --border-glow: rgba(99, 102, 241, 0.2);
-  --shadow-ambient: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
-  --shadow-elevated: 0 4px 6px -1px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05);
-  --shadow-premium: 0 8px 30px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
-
-  --sidebar-ring: #6366f1;
-  --sidebar-accent: #eef2ff;
-  --sidebar-border: #e2e8f0;
-  --card-foreground: #0f172a;
-  --sidebar-primary: #6366f1;
-  --muted-foreground: #64748b;
-  --accent-foreground: #1e293b;
-  --popover-foreground: #0f172a;
-  --primary-foreground: #ffffff;
-  --sidebar-foreground: #0f172a;
-  --secondary-foreground: #1e293b;
-  --destructive-foreground: #ffffff;
-  --sidebar-accent-foreground: #1e293b;
-  --sidebar-primary-foreground: #ffffff;
+  --glow-primary: rgba(79, 70, 229, 0.15);
+  --glow-accent: rgba(124, 58, 237, 0.1);
+  --surface-glass: rgba(255, 255, 255, 0.75);
+  --surface-elevated: rgba(255, 255, 255, 0.95);
+  --border-glow: rgba(79, 70, 229, 0.25);
+  --shadow-ambient: 0 2px 8px -2px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-elevated: 0 8px 24px -8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-premium: 0 16px 40px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.03);
 }
 
 /* ================================================================
@@ -65,7 +73,7 @@
   --input: #334155;
   --muted: #1e293b;
   --accent: #1e1b4b;
-  --border: #334155;
+  --border: rgba(255, 255, 255, 0.08);
   --radius: 0.625rem;
   --chart-1: #818cf8;
   --chart-2: #a78bfa;
@@ -92,7 +100,7 @@
 
   --sidebar-ring: #818cf8;
   --sidebar-accent: #1e1b4b;
-  --sidebar-border: #334155;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
   --card-foreground: #f1f5f9;
   --sidebar-primary: #818cf8;
   --muted-foreground: #94a3b8;
@@ -216,16 +224,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .glass-card {
-  background: var(--surface-glass);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-ambient);
-  transition: box-shadow 0.3s ease, transform 0.3s ease, border-color 0.3s ease;
+  background: linear-gradient(145deg, var(--surface-glass), rgba(255, 255, 255, 0.03));
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-premium), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: box-shadow 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease;
 }
 
 .glass-card:hover {
-  box-shadow: var(--shadow-elevated);
+  box-shadow: var(--shadow-elevated), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   border-color: var(--border-glow);
 }
 
@@ -299,7 +307,109 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ================================================================
-   PULSE GLOW
+   PREMIUM SYMMETRICAL 2PX CARD BORDERS
+   ================================================================ */
+[class*="bg-card"][class*="rounded-"]:not(input):not(textarea):not(select):not(button):not(a),
+[class*="bg-card/"][class*="rounded-"]:not(input):not(textarea):not(select):not(button):not(a),
+.surface-elevated,
+.glass-card,
+.surface-premium {
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: rgba(99, 102, 241, 0.6) !important; /* Navy blue at 75% opacity */
+  box-shadow:
+    0 4px 14px -2px rgba(0, 0, 128, 0.15),
+    inset 0 0 7px rgba(0, 0, 128, 0.05) !important;
+}
+
+.dark [class*="bg-card"][class*="rounded-"]:not(input):not(textarea):not(select):not(button):not(a),
+.dark [class*="bg-card/"][class*="rounded-"]:not(input):not(textarea):not(select):not(button):not(a),
+.dark .surface-elevated,
+.dark .glass-card,
+.dark .surface-premium {
+  border-width: 1.5px !important;
+  border-color: rgba(129, 140, 248, 1) !important; /* Full solid indigo-400 for max contrast in dark mode */
+  box-shadow: 
+    0 0 10px 1.5px rgba(99, 102, 241, 0.6), 
+    0 0 0 1.5px rgba(99, 102, 241, 0.4), 
+    inset 0 0 15px rgba(99, 102, 241, 0.2) !important;
+}
+
+/* ================================================================
+   VIEW TRANSITIONS (THEME TOGGLE BLEND)
+   ================================================================ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-group(root) {
+  animation-duration: 0.8s;
+}
+
+/* Define custom property for smooth gradient animation */
+@property --mask-radius {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+/* 1. Dark -> Light: Expanding Soft Gradient Circle */
+.transition-to-light::view-transition-old(root) {
+  animation: none;
+  z-index: 1;
+}
+.transition-to-light::view-transition-new(root) {
+  animation: theme-expand-soft 0.9s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  z-index: 2;
+  -webkit-mask-image: radial-gradient(circle farthest-corner at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%), black var(--mask-radius), transparent calc(var(--mask-radius) + 25%));
+  mask-image: radial-gradient(circle farthest-corner at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%), black var(--mask-radius), transparent calc(var(--mask-radius) + 25%));
+}
+
+/* 2. Light -> Dark: Contracting Soft Gradient Circle */
+.transition-to-dark::view-transition-old(root) {
+  animation: theme-contract-soft 0.9s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+  z-index: 2;
+  -webkit-mask-image: radial-gradient(circle farthest-corner at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%), black var(--mask-radius), transparent calc(var(--mask-radius) + 25%));
+  mask-image: radial-gradient(circle farthest-corner at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%), black var(--mask-radius), transparent calc(var(--mask-radius) + 25%));
+}
+.transition-to-dark::view-transition-new(root) {
+  animation: none;
+  z-index: 1;
+}
+
+@keyframes theme-expand-soft {
+  from { --mask-radius: -25%; }
+  to   { --mask-radius: 125%; }
+}
+
+@keyframes theme-contract-soft {
+  from { --mask-radius: 125%; }
+  to   { --mask-radius: -25%; }
+}
+
+/* ================================================================
+   UNIVERSAL SMOOTHNESS OVERRIDES (PROJECT-WIDE)
+   ================================================================ */
+.transition,
+.transition-all,
+.transition-colors,
+.transition-opacity,
+.transition-transform {
+  transition-duration: 350ms !important;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
+/* Ensure interactive elements have smooth baselines */
+button, a, input, select, textarea, [role="button"], .glass-card, .surface-elevated, .surface-premium {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-duration: 350ms;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ================================================================
+   COMPONENTS
    ================================================================ */
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 0px var(--glow-primary); }
@@ -362,8 +472,38 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ================================================================
-   SCROLLBAR STYLING
+   MISSING ANIMATION KEYFRAMES (used project-wide)
    ================================================================ */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* 3D perspective helper used in Login/Register panels */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* will-change hints for GPU compositing */
+.animate-float,
+.animate-float-slow,
+.pulse-glow {
+  will-change: transform;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

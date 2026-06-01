@@ -17,7 +17,6 @@ function getSystemTheme(): 'light' | 'dark' {
 
 function applyTheme(resolved: 'light' | 'dark') {
   const root = document.documentElement;
-  root.classList.add('theme-transition');
 
   if (resolved === 'dark') {
     root.classList.add('dark');
@@ -30,10 +29,6 @@ function applyTheme(resolved: 'light' | 'dark') {
   if (meta) {
     meta.setAttribute('content', resolved === 'dark' ? '#0b1120' : '#f8fafc');
   }
-
-  setTimeout(() => {
-    root.classList.remove('theme-transition');
-  }, 300);
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -74,6 +69,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
     try { localStorage.setItem('subflow_theme', t); } catch { /* */ }
+    
+    // Apply synchronously for View Transitions API
+    const next = t === 'system' ? getSystemTheme() : t;
+    setResolved(next);
+    applyTheme(next);
   }, []);
 
   return (

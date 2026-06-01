@@ -10,8 +10,9 @@ const ParticleCanvas = () => {
     if (!ctx) return;
 
     let animId: number;
+    // Reduced from 45 → 20 particles for better performance on low-end devices
     const particles: { x: number; y: number; r: number; vx: number; vy: number; opacity: number }[] = [];
-    const count = 45;
+    const count = 20;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -24,15 +25,24 @@ const ParticleCanvas = () => {
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         r: Math.random() * 1.5 + 0.5,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.3 + 0.1,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        opacity: Math.random() * 0.25 + 0.08,
       });
     }
 
     const isDark = () => document.documentElement.classList.contains('dark');
 
+    let paused = false;
+    const handleVisibility = () => { paused = document.hidden; };
+    document.addEventListener('visibilitychange', handleVisibility);
+
     const render = () => {
+      if (paused) {
+        animId = requestAnimationFrame(render);
+        return;
+      }
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const dark = isDark();
 
@@ -47,7 +57,6 @@ const ParticleCanvas = () => {
         p.x += p.vx;
         p.y += p.vy;
 
-        // Wrap around edges
         if (p.x < -10) p.x = canvas.width + 10;
         if (p.x > canvas.width + 10) p.x = -10;
         if (p.y < -10) p.y = canvas.height + 10;
@@ -63,6 +72,7 @@ const ParticleCanvas = () => {
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener('resize', resize);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 
@@ -70,7 +80,7 @@ const ParticleCanvas = () => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.6 }}
+      style={{ opacity: 0.5, willChange: 'contents' }}
     />
   );
 };

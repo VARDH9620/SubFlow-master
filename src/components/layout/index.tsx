@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -9,7 +9,7 @@ import {
   LayoutDashboard, CreditCard, FileText, LifeBuoy, User,
   Settings, Users, BarChart3, Server, Package, MessageSquare,
   LogOut, Menu, Bell, ChevronDown, Zap, DollarSign, Wallet,
-  Activity, Gift, CheckCircle, X,
+  Activity, Gift, CheckCircle, X, Search,
 } from 'lucide-react';
 import * as db from '../../db/database';
 
@@ -79,31 +79,51 @@ export function UserLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const notifCacheRef = useRef<{ ts: number; count: number; list: typeof notifs }>({ ts: 0, count: 0, list: [] });
+
+  const loadNotifs = useCallback(async () => {
     if (!user) return;
-    const loadNotifs = async () => {
-      try {
-        const n = await db.getNotifications(user.id);
-        setNotifCount(n.filter(x => !x.read).length);
-        setNotifs(n.slice(0, 5));
-        const prog = await db.getOnboardingProgress(user.id);
-        const steps = await db.getOnboardingSteps(user.id);
-        setOnboarding({ progress: prog, steps });
-        if (prog < 100) setShowOnboarding(true);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+    const now = Date.now();
+    // 30-second cache — avoid hammering the API on every route change
+    if (now - notifCacheRef.current.ts < 30_000) {
+      setNotifCount(notifCacheRef.current.count);
+      setNotifs(notifCacheRef.current.list);
+      return;
+    }
+    try {
+      const [n, prog, steps] = await Promise.all([
+        db.getNotifications(user.id),
+        db.getOnboardingProgress(user.id),
+        db.getOnboardingSteps(user.id),
+      ]);
+      const unread = n.filter(x => !x.read).length;
+      const recent = n.slice(0, 5);
+      notifCacheRef.current = { ts: now, count: unread, list: recent };
+      setNotifCount(unread);
+      setNotifs(recent);
+      setOnboarding({ progress: prog, steps });
+      if (prog < 100) setShowOnboarding(true);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [user]);
+
+  useEffect(() => {
     loadNotifs();
-  }, [user, location.pathname]);
+  }, [loadNotifs, location.pathname]);
 
   const handleNotifClick = async (id: string) => {
     if (user) {
       try {
         await db.markNotificationRead(id);
+        // Invalidate cache so next load fetches fresh data
+        notifCacheRef.current.ts = 0;
         const n = await db.getNotifications(user.id);
-        setNotifCount(n.filter(x => !x.read).length);
-        setNotifs(n.slice(0, 5));
+        const unread = n.filter(x => !x.read).length;
+        const recent = n.slice(0, 5);
+        notifCacheRef.current = { ts: Date.now(), count: unread, list: recent };
+        setNotifCount(unread);
+        setNotifs(recent);
       } catch (err) {
         console.error(err);
       }
@@ -169,9 +189,16 @@ export function UserLayout() {
             </button>
             <div className="flex-1" />
             <div className="flex items-center gap-1.5">
-              {/* Command palette trigger */}
-              <button onClick={() => { const e = new KeyboardEvent('keydown', { key: 'k', metaKey: true }); document.dispatchEvent(e); }} className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground/60 bg-muted/30 rounded-lg border border-border/50 hover:bg-muted/50 hover:text-muted-foreground transition-all">
-                <kbd className="font-mono text-[10px] opacity-60">⌘K</kbd> Search...
+              {/* Command palette trigger — uses proper keyboard event dispatch */}
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true }));
+                }}
+                className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground/60 bg-muted/30 rounded-lg border border-border/50 hover:bg-muted/50 hover:text-muted-foreground transition-all"
+              >
+                <Search className="w-3 h-3" />
+                <span>Search</span>
+                <kbd className="font-mono text-[10px] opacity-60 ml-1">⌘K</kbd>
               </button>
               <ThemeToggle />
 

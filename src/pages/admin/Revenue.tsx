@@ -37,9 +37,10 @@ export default function AdminRevenue() {
   const revenueByMonth = (() => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const now = new Date();
+    const currentYear = now.getFullYear();
     return months.slice(0, now.getMonth() + 1).map((name, i) => {
-      const monthPaid = invoices.filter(inv => inv.status === 'paid' && new Date(inv.created_at).getMonth() === i);
-      const monthPending = invoices.filter(inv => inv.status === 'pending' && new Date(inv.created_at).getMonth() === i);
+      const monthPaid = invoices.filter(inv => inv.status === 'paid' && new Date(inv.created_at).getMonth() === i && new Date(inv.created_at).getFullYear() === currentYear);
+      const monthPending = invoices.filter(inv => inv.status === 'pending' && new Date(inv.created_at).getMonth() === i && new Date(inv.created_at).getFullYear() === currentYear);
       return {
         name,
         collected: +monthPaid.reduce((s, i) => s + i.total, 0).toFixed(2),
@@ -111,7 +112,7 @@ export default function AdminRevenue() {
             </thead>
             <tbody>
               {filtered.slice(0, 50).map(inv => (
-                <tr key={inv.id} className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-muted/50/50 dark:hover:bg-slate-700/30">
+                <tr key={inv.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
                   <td className="py-3 px-4 text-sm font-mono text-foreground/90">{inv.invoice_number.slice(0, 18)}</td>
                   <td className="py-3 px-4 text-sm text-foreground/90">{inv.user_email}</td>
                   <td className="py-3 px-4 text-sm text-foreground/90">{inv.service_name}</td>

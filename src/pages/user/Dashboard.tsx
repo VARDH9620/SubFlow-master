@@ -18,9 +18,12 @@ export default function UserDashboard() {
   useEffect(() => {
     if (!user) return;
     const loadData = async () => {
-      const userSubs = await db.getSubscriptionsByUser(user.id);
+      // Parallel fetch for snappier load
+      const [userSubs, userInvoices] = await Promise.all([
+        db.getSubscriptionsByUser(user.id),
+        db.getInvoicesByUser(user.id),
+      ]);
       setSubs(userSubs);
-      const userInvoices = await db.getInvoicesByUser(user.id);
       setInvoices(userInvoices);
       const activeSpend = userSubs.filter(s => s.status === 'active').reduce((sum, s) => sum + (s.price || 0), 0);
       setMonthlySpend(activeSpend);
@@ -35,9 +38,12 @@ export default function UserDashboard() {
     const d = new Date();
     d.setMonth(d.getMonth() - (5 - i));
     const monthName = d.toLocaleString('default', { month: 'short' });
+    const targetMonth = d.getMonth();
+    const targetYear = d.getFullYear();
     const monthInvoices = invoices.filter(inv => {
       const id = new Date(inv.created_at);
-      return id.getMonth() === d.getMonth() && inv.status === 'paid';
+      // Fixed: compare both month AND year to avoid cross-year pollution
+      return id.getMonth() === targetMonth && id.getFullYear() === targetYear && inv.status === 'paid';
     });
     return { name: monthName, amount: +monthInvoices.reduce((s, inv) => s + inv.total, 0).toFixed(2) };
   });

@@ -107,7 +107,7 @@ export default function Billing() {
               </thead>
               <tbody>
                 {filtered.map(inv => (
-                  <tr key={inv.id} className="border-b border-gray-50 dark:border-slate-700/50 hover:bg-muted/50/50 dark:hover:bg-slate-700/30">
+                  <tr key={inv.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
                     <td className="py-3 px-4 text-sm font-mono text-foreground/90">{inv.invoice_number.slice(0, 18)}</td>
                     <td className="py-3 px-4 text-sm text-foreground/90">{inv.service_name}</td>
                     <td className="py-3 px-4 text-sm text-muted-foreground dark:text-slate-300">{inv.plan_name}</td>
@@ -131,7 +131,7 @@ export default function Billing() {
                           </Button>
                         </div>
                       ) : (
-                        <Button size="sm" variant="ghost" onClick={() => handleDownloadPDF(inv)} className="gap-1 text-primary hover:bg-primary-50 dark:hover:bg-primary-900/20">
+                        <Button size="sm" variant="ghost" onClick={() => handleDownloadPDF(inv)} className="gap-1 text-primary hover:bg-primary/10">
                           <Download className="w-3.5 h-3.5" /> PDF
                         </Button>
                       )}
