@@ -6,7 +6,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const { theme, setTheme } = useTheme();
 
   const cycleTheme = (e: React.MouseEvent) => {
-    const nextTheme = theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light';
+    const nextTheme = theme === 'light' ? 'dark' : 'light';
     
     if (!document.startViewTransition) {
       setTheme(nextTheme);
@@ -24,7 +24,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
     document.documentElement.style.setProperty('--theme-origin-y', `${y}px`);
     document.documentElement.style.setProperty('--theme-radius', `${endRadius}px`);
 
-    const isGoingDark = nextTheme === 'dark' || (nextTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isGoingDark = nextTheme === 'dark';
     
     document.documentElement.classList.remove('transition-to-dark', 'transition-to-light');
     document.documentElement.classList.add(isGoingDark ? 'transition-to-dark' : 'transition-to-light');
@@ -44,7 +44,6 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
     >
       {theme === 'light' && <Sun className="w-4 h-4 text-amber-500" />}
       {theme === 'dark' && <Moon className="w-4 h-4 text-blue-400" />}
-      {theme === 'system' && <Monitor className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
     </button>
   );
 }

@@ -213,9 +213,9 @@ export function UserLayout() {
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setNotifOpen(false)} />
                       <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 12 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
                         className="absolute right-0 mt-2 w-80 bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-black/10 dark:shadow-black/30 border border-border/50 z-50 overflow-hidden"
                       >
@@ -254,9 +254,9 @@ export function UserLayout() {
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setProfileOpen(false)} />
                       <motion.div
-                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 12 }}
                         transition={{ duration: 0.2, ease: 'easeOut' }}
                         className="absolute right-0 mt-2 w-48 bg-card/95 backdrop-blur-xl rounded-xl shadow-xl border border-border/50 py-1 z-50"
                       >

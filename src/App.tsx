@@ -111,8 +111,13 @@ export default function App() {
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <ToastContainer />
-          <AppRoutes />
+          <>
+            <div className="premium-gradient-bg fixed inset-0 pointer-events-none z-[-1]" />
+            <div className="relative z-0 min-h-screen">
+              <ToastContainer />
+              <AppRoutes />
+            </div>
+          </>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

@@ -173,10 +173,16 @@
   scrollbar-color: var(--border) transparent;
 }
 
+html,
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
-  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -185,16 +191,14 @@ body {
   line-height: 1.6;
   background-color: var(--background);
   color: var(--foreground);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
 }
 
 ::selection {
@@ -274,11 +278,31 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ================================================================
+   AURA GLOW FOCUS (Premium Inputs)
+   ================================================================ */
+.aura-glow-focus:focus-visible,
+.aura-glow-focus:focus-within {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 
+    0 0 0 1px var(--background), 
+    0 0 0 3px var(--primary), 
+    0 0 24px 2px var(--glow-primary) !important;
+  animation: glowPulse 2s infinite alternate;
+}
+
+@keyframes glowPulse {
+  from { box-shadow: 0 0 0 1px var(--background), 0 0 0 3px var(--primary), 0 0 16px 2px var(--glow-primary); }
+  to { box-shadow: 0 0 0 1px var(--background), 0 0 0 3px var(--primary), 0 0 28px 4px var(--glow-primary); }
+}
+
+/* ================================================================
    SHINE SWEEP ANIMATION
    ================================================================ */
 @keyframes shineSweep {
   0% { transform: translateX(-100%) skewX(-15deg); }
-  100% { transform: translateX(200%) skewX(-15deg); }
+  50% { transform: translateX(100%) skewX(-15deg); }
+  100% { transform: translateX(-100%) skewX(-15deg); }
 }
 
 .shine-sweep {
@@ -291,19 +315,25 @@ h1, h2, h3, h4, h5, h6 {
   position: absolute;
   top: 0;
   left: 0;
-  width: 40%;
+  width: 150%;
   height: 100%;
   background: linear-gradient(
     90deg,
-    transparent,
-    rgba(255, 255, 255, 0.12),
-    transparent
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 25%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0.1) 75%,
+    transparent 100%
   );
   transform: translateX(-100%) skewX(-15deg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .shine-sweep:hover::before {
-  animation: shineSweep 0.75s ease-out forwards;
+  opacity: 1;
+  animation: shineSweep 2.5s infinite ease-in-out;
 }
 
 /* ================================================================
@@ -327,11 +357,11 @@ h1, h2, h3, h4, h5, h6 {
 .dark .surface-elevated,
 .dark .glass-card,
 .dark .surface-premium {
-  border-width: 1.5px !important;
-  border-color: rgba(129, 140, 248, 1) !important; /* Full solid indigo-400 for max contrast in dark mode */
+  border-width: 1px !important;
+  border-color: rgba(129, 140, 248, 1) !important;
   box-shadow: 
-    0 0 10px 1.5px rgba(99, 102, 241, 0.6), 
-    0 0 0 1.5px rgba(99, 102, 241, 0.4), 
+    0 0 10px 1px rgba(99, 102, 241, 0.6), 
+    0 0 0 2px rgba(99, 102, 241, 0.3), 
     inset 0 0 15px rgba(99, 102, 241, 0.2) !important;
 }
 
@@ -480,8 +510,8 @@ button, a, input, select, textarea, [role="button"], .glass-card, .surface-eleva
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to   { opacity: 1; transform: scale(1); }
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fadeIn {
@@ -497,16 +527,11 @@ button, a, input, select, textarea, [role="button"], .glass-card, .surface-eleva
   perspective: 1000px;
 }
 
-/* will-change hints for GPU compositing */
-.animate-float,
-.animate-float-slow,
-.pulse-glow {
-  will-change: transform;
-}
+
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -514,12 +539,18 @@ button, a, input, select, textarea, [role="button"], .glass-card, .surface-eleva
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background-color: transparent;
   border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+:hover::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+}
+
+:hover::-webkit-scrollbar-thumb:hover {
+  background-color: var(--muted-foreground);
 }
 
 /* ================================================================
@@ -542,4 +573,39 @@ button, a, input, select, textarea, [role="button"], .glass-card, .surface-eleva
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ================================================================
+   PREMIUM ANIMATED MESH BACKGROUND
+   ================================================================ */
+.premium-gradient-bg {
+  position: relative;
+  z-index: 0;
+}
+
+.premium-gradient-bg::before,
+.premium-gradient-bg::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background-size: 200% 200%;
+}
+
+.premium-gradient-bg::before {
+  background: radial-gradient(circle at 10% 20%, var(--glow-primary) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, var(--glow-accent) 0%, transparent 40%);
+  animation: mesh-float 20s ease-in-out infinite alternate;
+  opacity: 0.7;
+}
+
+.dark .premium-gradient-bg::before {
+  opacity: 0.4;
+}
+
+@keyframes mesh-float {
+  0% { background-position: 0% 0%; transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(2deg); }
+  100% { background-position: 100% 100%; transform: scale(1) rotate(-2deg); }
 }

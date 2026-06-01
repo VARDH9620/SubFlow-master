@@ -2,7 +2,7 @@ import { type ReactNode, useEffect, useRef } from 'react';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle, Search } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import type { Toast } from '../../types';
-import { motion, AnimatePresence, type HTMLMotionProps } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useMotionTemplate, type HTMLMotionProps } from 'framer-motion';
 import {
   springSnappy,
   springGentle,
@@ -23,7 +23,7 @@ interface ButtonProps extends Omit<HTMLMotionProps<"button">, 'ref'> {
 }
 
 export function Button({ variant = 'primary', size = 'md', loading, children, className = '', disabled, ...props }: ButtonProps) {
-  const base = 'inline-flex relative items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed shine-sweep';
+  const base = 'inline-flex relative items-center justify-center font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden shine-sweep';
 
   const v: Record<string, string> = {
     primary: 'bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-primary shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/20',
@@ -41,20 +41,20 @@ export function Button({ variant = 'primary', size = 'md', loading, children, cl
 
   return (
     <motion.button
-      whileHover={disabled || loading ? {} : { y: -1, scale: 1.015 }}
-      whileTap={disabled || loading ? {} : { scale: 0.975 }}
+      whileHover={disabled || loading ? {} : { y: -2 }}
+      whileTap={disabled || loading ? {} : { y: 1, scale: 0.98 }}
       transition={springSnappy}
       className={`${base} ${v[variant]} ${s[size]} ${className}`}
       disabled={disabled || loading}
       {...props}
     >
       {loading && (
-        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+        <svg className="animate-spin h-4 w-4 relative z-10" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
         </svg>
       )}
-      {children}
+      <span className="relative z-10 flex items-center gap-inherit">{children}</span>
     </motion.button>
   );
 }
@@ -73,11 +73,9 @@ export function Input({ label, error, helper, className = '', id, ...props }: In
       <div className="relative group">
         <input
           id={elId}
-          className={`flex h-10 w-full rounded-xl border bg-card/50 backdrop-blur-sm px-3.5 py-2 text-[14px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 ${error ? 'border-destructive focus-visible:ring-destructive/40' : 'border-border hover:border-primary/30'} ${className}`}
+          className={`flex h-10 w-full rounded-xl border bg-card/70 px-3.5 py-2 text-[14px] ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground/60 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 aura-glow-focus ${error ? 'border-destructive' : 'border-border hover:border-primary/30'} ${className}`}
           {...props}
         />
-        {/* Focus glow effect */}
-        <div className="absolute inset-0 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: '0 0 0 3px var(--glow-primary)' }} />
       </div>
       <AnimatePresence>
         {error && (
@@ -101,9 +99,9 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
 export function Select({ label, options, className = '', id, ...props }: SelectProps) {
   const elId = id || label?.toLowerCase().replace(/\s+/g, '-');
   return (
-    <div className="w-full space-y-1.5">
-      {label && <label htmlFor={elId} className="block text-[13px] font-medium text-foreground tracking-tight">{label}</label>}
-      <select id={elId} className={`flex h-10 w-full rounded-xl border border-border bg-card/50 backdrop-blur-sm px-3.5 py-2 text-[14px] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:border-primary/30 ${className}`} {...props}>
+    <div className="w-full space-y-2">
+      {label && <label htmlFor={elId} className="text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground/90">{label}</label>}
+      <select id={elId} className={`flex h-10 w-full rounded-xl border border-border bg-card/70 px-3.5 py-2 text-[14px] ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:border-primary/30 aura-glow-focus focus:outline-none ${className}`} {...props}>
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </div>
@@ -119,9 +117,9 @@ interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement
 export function Textarea({ label, error, className = '', id, ...props }: TextareaProps) {
   const elId = id || label?.toLowerCase().replace(/\s+/g, '-');
   return (
-    <div className="w-full space-y-1.5">
-      {label && <label htmlFor={elId} className="block text-[13px] font-medium text-foreground tracking-tight">{label}</label>}
-      <textarea id={elId} className={`flex min-h-[80px] w-full rounded-xl border bg-card/50 backdrop-blur-sm px-3.5 py-2.5 text-[14px] ring-offset-background placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 ${error ? 'border-destructive focus-visible:ring-destructive/40' : 'border-border hover:border-primary/30'} ${className}`} {...props} />
+    <div className="w-full space-y-2">
+      {label && <label htmlFor={elId} className="text-sm font-semibold leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground/90">{label}</label>}
+      <textarea id={elId} className={`flex min-h-[80px] w-full rounded-xl border bg-card/70 px-3.5 py-2.5 text-[14px] ring-offset-background placeholder:text-muted-foreground/60 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 aura-glow-focus focus:outline-none ${error ? 'border-destructive' : 'border-border hover:border-primary/30'} ${className}`} {...props} />
       <AnimatePresence>
         {error && (
           <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="text-[13px] font-medium text-destructive flex items-center gap-1">
@@ -138,13 +136,34 @@ export function Textarea({ label, error, className = '', id, ...props }: Textare
    ================================================================ */
 interface CardProps { children: ReactNode; className?: string; padding?: boolean; interactive?: boolean; glow?: boolean }
 export function Card({ children, className = '', padding = true, interactive = false, glow = false }: CardProps) {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const { left, top } = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - left);
+    mouseY.set(e.clientY - top);
+  }
+
   return (
     <motion.div
-      whileHover={interactive ? { y: -3, scale: 1.005 } : {}}
+      onMouseMove={interactive ? handleMouseMove : undefined}
+      whileHover={interactive ? { y: -4 } : {}}
       transition={springSnappy}
-      className={`rounded-xl border border-border bg-card/80 backdrop-blur-sm text-card-foreground transition-all duration-300 ${interactive ? 'hover:shadow-lg hover:shadow-primary/[0.04] hover:border-primary/20 cursor-pointer' : 'shadow-sm'} ${glow ? 'pulse-glow' : ''} ${padding ? 'p-6' : ''} ${className}`}
+      className={`group relative overflow-hidden rounded-xl border border-border bg-card/80 text-card-foreground transition-all duration-300 ${interactive ? 'hover:shadow-lg hover:shadow-primary/[0.04] hover:border-primary/20 cursor-pointer' : 'shadow-sm'} ${glow ? 'pulse-glow' : ''} ${className}`}
     >
-      {children}
+      {interactive && (
+        <motion.div
+          className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-300 group-hover:opacity-100"
+          style={{
+            background: useMotionTemplate`radial-gradient(400px circle at ${mouseX}px ${mouseY}px, var(--glow-primary), transparent 80%)`,
+            zIndex: 0,
+          }}
+        />
+      )}
+      <div className={`relative z-10 h-full w-full ${padding ? 'p-6' : ''}`}>
+        {children}
+      </div>
     </motion.div>
   );
 }
@@ -155,14 +174,14 @@ export function Card({ children, className = '', padding = true, interactive = f
 interface BadgeProps { variant?: 'default' | 'success' | 'warning' | 'danger' | 'info' | 'purple'; children: ReactNode; className?: string }
 export function Badge({ variant = 'default', children, className = '' }: BadgeProps) {
   const v: Record<string, string> = {
-    default:   'bg-secondary/80 text-secondary-foreground',
-    success:   'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-    warning:   'bg-amber-100/80 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
-    danger:    'bg-red-100/80 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-    info:      'bg-blue-100/80 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-    purple:    'bg-indigo-100/80 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+    default:   'bg-secondary/80 text-secondary-foreground ring-1 ring-inset ring-foreground/10',
+    success:   'bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 ring-1 ring-inset ring-emerald-500/20',
+    warning:   'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 ring-1 ring-inset ring-amber-500/20',
+    danger:    'bg-red-100/80 text-red-700 dark:bg-red-900/30 dark:text-red-400 ring-1 ring-inset ring-red-500/20',
+    info:      'bg-blue-100/80 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 ring-1 ring-inset ring-blue-500/20',
+    purple:    'bg-indigo-100/80 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400 ring-1 ring-inset ring-indigo-500/20',
   };
-  return <span className={`inline-flex items-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-semibold backdrop-blur-sm transition-colors ${v[variant]} ${className}`}>{children}</span>;
+  return <span className={`inline-flex items-center rounded-full border border-transparent px-2.5 py-0.5 text-xs font-semibold transition-all ${v[variant]} ${className}`}>{children}</span>;
 }
 
 /* ================================================================
@@ -183,7 +202,7 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 overflow-y-auto overflow-x-hidden">
           <motion.div
             variants={overlayVariants}
             initial="hidden" animate="show" exit="exit"
@@ -194,9 +213,9 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
             ref={ref}
             variants={modalVariants}
             initial="hidden" animate="show" exit="exit"
-            className={`relative w-full rounded-2xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/30 overflow-hidden flex flex-col max-h-[85vh] ${w[size]}`}
+            className={`relative w-full rounded-2xl border border-border bg-card shadow-2xl shadow-black/10 dark:shadow-black/30 overflow-hidden flex flex-col mb-16 max-h-[85vh] ${w[size]}`}
           >
-            <div className="flex flex-col space-y-1 p-6 border-b border-border/50 shrink-0">
+            <div className="flex flex-col space-y-1 p-6 border-b border-border/50 shrink-0 bg-card z-10">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold tracking-tight text-foreground">{title}</h3>
                 <button onClick={onClose} className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
@@ -250,7 +269,7 @@ interface Column<T> { key: string; header: string; render?: (item: T) => ReactNo
 interface TableProps<T> { columns: Column<T>[]; data: T[]; keyExtractor: (item: T) => string; emptyMessage?: string }
 export function Table<T>({ columns, data, keyExtractor, emptyMessage = 'No results found.' }: TableProps<T>) {
   return (
-    <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm overflow-hidden shadow-sm">
+    <div className="rounded-xl border border-border bg-card/90 overflow-hidden shadow-sm">
       <div className="w-full overflow-auto">
         <table className="w-full caption-bottom text-sm">
           <thead>
@@ -317,9 +336,10 @@ export function ToastContainer() {
           <motion.div
             key={t.id}
             layout
-            variants={toastVariants}
-            initial="hidden" animate="show" exit="exit"
-            className={`group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-xl border border-border/80 p-4 pr-8 shadow-lg ${glowColors[t.type]} bg-card/95 backdrop-blur-xl text-foreground`}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+            className={`group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-xl border border-border/80 p-4 pr-8 shadow-lg ${glowColors[t.type]} bg-card/95 text-foreground`}
           >
             <div className="flex gap-3 w-full items-center">
               <div className="shrink-0">{icons[t.type]}</div>
@@ -404,10 +424,10 @@ export function PageHeader({ title, description, action }: PageHeaderProps) {
 interface SearchBarProps { value: string; onChange: (v: string) => void; placeholder?: string }
 export function SearchBar({ value, onChange, placeholder = 'Search...' }: SearchBarProps) {
   return (
-    <div className="relative group">
+    <div className="relative group aura-glow-focus rounded-xl focus-within:ring-0">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-focus-within:text-primary/70 transition-colors" />
       <input type="search" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        className="flex h-9 w-full rounded-xl border border-border bg-card/50 backdrop-blur-sm pl-9 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/40 transition-all duration-200 hover:border-primary/20" />
+        className="flex h-9 w-full rounded-xl border border-border bg-card/70 pl-9 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground/50 focus:outline-none transition-all duration-200 hover:border-primary/20 bg-transparent" />
     </div>
   );
 }
@@ -418,7 +438,7 @@ export function SearchBar({ value, onChange, placeholder = 'Search...' }: Search
 interface TabsProps { tabs: { key: string; label: string; count?: number }[]; active: string; onChange: (key: string) => void }
 export function Tabs({ tabs, active, onChange }: TabsProps) {
   return (
-    <div className="inline-flex h-10 items-center justify-center rounded-xl bg-muted/50 backdrop-blur-sm p-1 text-muted-foreground mb-6 border border-border/50">
+    <div className="inline-flex h-10 items-center justify-center rounded-xl bg-muted/70 p-1 text-muted-foreground mb-6 border border-border/50">
       {tabs.map(t => {
         const isActive = active === t.key;
         return (

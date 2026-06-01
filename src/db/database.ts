@@ -13,9 +13,27 @@ import emailjs from '@emailjs/browser';
 
 const API_BASE = '/api';
 
+// In-memory cache for GET requests to dramatically improve perceived performance
+const apiCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL_MS = 60 * 1000; // 60 seconds
+
 // Helper for making fetch requests
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE}${path}`;
+  const method = options?.method || 'GET';
+
+  // If it's a GET request, check the cache first
+  if (method === 'GET') {
+    const cached = apiCache.get(url);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      // Return cached data instantly to prevent layout shifts and loading spinners
+      return cached.data as T;
+    }
+  } else {
+    // If it's a mutation (POST, PUT, DELETE), clear the cache so fresh data is fetched next time
+    apiCache.clear();
+  }
+
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -29,7 +47,14 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
   }
 
-  return response.json();
+  const data = await response.json();
+
+  // Save successful GET requests to cache
+  if (method === 'GET') {
+    apiCache.set(url, { data, timestamp: Date.now() });
+  }
+
+  return data;
 }
 
 // ====================================================================

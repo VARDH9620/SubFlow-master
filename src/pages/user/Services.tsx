@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Cloud, GitBranch, BarChart3, Shield, Users, Mail, Check } from 'lucide-react';
 import * as db from '../../db/database';
 import { useAuth } from '../../context/AuthContext';
@@ -21,13 +22,17 @@ export default function Services() {
   const [search, setSearch] = useState('');
   const [selectedSvc, setSelectedSvc] = useState<Service | null>(null);
   const [showPlans, setShowPlans] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       const allServices = await db.getAllServices();
       setServices(allServices.filter(s => s.status === 'active'));
       const allPlans = await db.getAllPlans();
       setPlans(allPlans);
+      // Artificial slight delay for smoothness if cached, otherwise the skeleton flashes too fast
+      setTimeout(() => setLoading(false), 200);
     };
     loadData();
   }, []);
@@ -55,37 +60,77 @@ export default function Services() {
         action={<SearchBar value={search} onChange={setSearch} placeholder="Search services..." />}
       />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {loading ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <div key={i} className="rounded-xl border border-border bg-card/50 p-6 h-[220px] flex flex-col justify-between">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-12 h-12 rounded-xl skeleton flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 w-3/4 rounded skeleton" />
+                  <div className="h-4 w-1/3 rounded skeleton" />
+                </div>
+              </div>
+              <div className="space-y-2 mb-4">
+                <div className="h-4 w-full rounded skeleton" />
+                <div className="h-4 w-5/6 rounded skeleton" />
+              </div>
+              <div className="flex justify-between items-center pt-4 border-t border-border/50">
+                <div className="h-6 w-24 rounded skeleton" />
+                <div className="h-8 w-24 rounded skeleton" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <motion.div 
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: { opacity: 0 },
+            show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+          }}
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
+        >
         {filtered.map(svc => {
           const svcPlansCount = plans.filter(p => p.service_id === svc.id && p.status === 'active').length;
           const minPrice = Math.min(...plans.filter(p => p.service_id === svc.id && p.status === 'active').map(p => p.price));
 
           return (
-            <Card key={svc.id} className="hover:shadow-md transition-shadow">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-3 bg-primary-50 dark:bg-primary-500/10 text-primary rounded-xl">
-                  {iconMap[svc.icon] || <Cloud className="w-6 h-6" />}
+            <motion.div 
+              key={svc.id}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                show: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 300 } }
+              }}
+            >
+              <Card className="hover:shadow-md transition-shadow h-full flex flex-col">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="p-3 bg-primary-50 dark:bg-primary-500/10 text-primary rounded-xl">
+                    {iconMap[svc.icon] || <Cloud className="w-6 h-6" />}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">{svc.name}</h3>
+                    <Badge className="mt-1">{svc.category}</Badge>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">{svc.name}</h3>
-                  <Badge className="mt-1">{svc.category}</Badge>
+                <p className="text-sm text-muted-foreground dark:text-slate-300 mb-4 flex-grow">{svc.description}</p>
+                <div className="flex items-center justify-between pt-4 border-t border-border/50 dark:border-dark-surface-3/60 mt-auto">
+                  <div>
+                    <span className="text-lg font-bold text-foreground dark:text-white">${minPrice.toFixed(2)}</span>
+                    <span className="text-xs text-muted-foreground dark:text-slate-300">/mo</span>
+                    <p className="text-xs text-muted-foreground/80 dark:text-slate-400">{svcPlansCount} plans available</p>
+                  </div>
+                  <Button size="sm" onClick={() => { setSelectedSvc(svc); setShowPlans(true); }}>
+                    View Plans
+                  </Button>
                 </div>
-              </div>
-              <p className="text-sm text-muted-foreground dark:text-slate-300 mb-4">{svc.description}</p>
-              <div className="flex items-center justify-between pt-4 border-t border-border/50 dark:border-dark-surface-3/60">
-                <div>
-                  <span className="text-lg font-bold text-foreground dark:text-white">${minPrice.toFixed(2)}</span>
-                  <span className="text-xs text-muted-foreground dark:text-slate-300">/mo</span>
-                  <p className="text-xs text-muted-foreground/80 dark:text-slate-400">{svcPlansCount} plans available</p>
-                </div>
-                <Button size="sm" onClick={() => { setSelectedSvc(svc); setShowPlans(true); }}>
-                  View Plans
-                </Button>
-              </div>
-            </Card>
+              </Card>
+            </motion.div>
           );
         })}
-      </div>
+        </motion.div>
+      )}
 
       {/* Plans Modal */}
       <Modal open={showPlans} onClose={() => { setShowPlans(false); setSelectedSvc(null); }} title={selectedSvc?.name || 'Plans'} size="lg">
