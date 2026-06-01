@@ -10,7 +10,8 @@ if (!connectionString) {
 }
 
 const pool = new pg.Pool({ 
-  connectionString: connectionString || "postgresql://invalid:invalid@localhost/invalid"
+  connectionString: connectionString || "postgresql://invalid:invalid@localhost/invalid",
+  ssl: process.env.NODE_ENV === 'production' || process.env.VERCEL ? { rejectUnauthorized: false } : undefined
 });
 const adapter = new PrismaPg(pool);
 
