@@ -478,7 +478,7 @@ export default function PaymentPage() {
             <Button
               onClick={() => {
                 if (selectedInvoice && completedPayment) {
-                  generateInvoicePDF(selectedInvoice, completedPayment, { mode: 'receipt' });
+                  generateInvoicePDF({ ...selectedInvoice, status: 'paid', paid_at: new Date().toISOString() }, completedPayment, { mode: 'receipt' });
                   addToast('Receipt downloaded!', 'success');
                 }
               }}

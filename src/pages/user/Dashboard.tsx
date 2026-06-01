@@ -6,6 +6,7 @@ import * as db from '../../db/database';
 import { Card, StatCard, Badge, Button, PageHeader, AnimatedContainer, AnimatedItem, SkeletonCardGrid, SkeletonTable } from '../../components/ui';
 import type { Subscription, Invoice } from '../../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { motion } from 'framer-motion';
 
 export default function UserDashboard() {
   const { user } = useAuth();
