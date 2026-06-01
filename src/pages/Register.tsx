@@ -242,12 +242,11 @@ export default function Register() {
                   </div>
                   
                   <div className="pt-2">
-                    <Button type="submit" loading={loading} className="w-full h-12 text-base font-semibold group overflow-hidden">
+                    <Button type="submit" loading={loading} className="w-full h-12 text-base font-semibold group shine-sweep">
                       <span className="relative z-10 flex items-center justify-center gap-2">
                         Continue
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                     </Button>
                   </div>
 
